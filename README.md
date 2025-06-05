@@ -2,7 +2,7 @@
 
 # SAA Playground
 
-![MIT License](https://img.shields.io/badge/license-MIT-green)
+![AGPL License](https://img.shields.io/badge/license-AGPL-green)
 ![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0-blue)
 ![Vite](https://img.shields.io/badge/built%20with-vite-646CFF)
 
@@ -10,8 +10,7 @@
 
 ## Overview
 
-SAA Playground is a web-based interactive tool for Strategic Asset Allocation (SAA) optimization.  
-Supports efficient frontier visualization, modular constraints, and portfolio statistics—all in the browser.
+SAA Playground is a web-based interactive tool for Strategic Asset Allocation (SAA) optimization. It supports efficient frontier visualization, modular constraints, and portfolio statistics—all in the browser.
 
 Built with [TensorFlow.js](https://www.tensorflow.org/js)
 
@@ -20,7 +19,6 @@ Built with [TensorFlow.js](https://www.tensorflow.org/js)
 - **Modern Web UI**: Built with React and TypeScript for fast, interactive analysis.
 - **TensorFlow.js Optimizer**: Gradient-based optimization, supports complex constraints and objectives.
 - **Efficient Frontier Plot**: Visualize risk-return tradeoffs with live, customizable plots.
-- **Modular Constraints**: Add, configure, and remove constraints (e.g., no shorting, group bounds, per-asset limits) via the UI.
 - **Portfolio Analytics**: Display optimized weights and key statistics (return, risk, Sharpe ratio, etc.).
 
 
