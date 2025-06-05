@@ -1,8 +1,19 @@
+<div align="center">
+
 # SAA Playground
 
-A web-based interactive tool for Strategic Asset Allocation (SAA) optimization.  
-Built with Vite, React, TypeScript, and TensorFlow.js.  
+![MIT License](https://img.shields.io/badge/license-MIT-green)
+![Node.js Version](https://img.shields.io/badge/node-%3E%3D16.0-blue)
+![Vite](https://img.shields.io/badge/built%20with-vite-646CFF)
+
+</div>
+
+## Overview
+
+SAA Playground is a web-based interactive tool for Strategic Asset Allocation (SAA) optimization.  
 Supports efficient frontier visualization, modular constraints, and portfolio statistics—all in the browser.
+
+Built with [TensorFlow.js](https://www.tensorflow.org/js)
 
 ## Features
 
@@ -75,4 +86,13 @@ See the [Vite deployment guide](https://vitejs.dev/guide/static-deploy.html) for
 
 ## License
 
-MIT License
+This project is licensed under the <b>GNU Affero General Public License v3.0</b> (AGPL-3.0).  
+See the LICENSE file for details.
+
+<blockquote>
+    <b>Note</b>: Any modified versions must also be made publicly available under the same license if deployed.
+</blockquote>
+
+## Contact
+
+For inquiries, please reach out via <a href="https://github.com/niyangbai/enhanced_shap/issues">GitHub Issues</a>.
