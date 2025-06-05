@@ -4,8 +4,7 @@ import type { ConstraintConfig } from '../components/ConstraintBuilder';
 
 // Converts ConstraintConfig objects to constraint functions returning tf.Scalar
 export function buildConstraintFns(
-  constraints: ConstraintConfig[],
-  assets: string[]
+  constraints: ConstraintConfig[]
 ): ((w: tf.Tensor) => tf.Scalar)[] {
   return constraints.map(cfg => {
     switch (cfg.key) {

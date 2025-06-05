@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { AssetInputPanel } from './components/AssetInputPanel';
 import { ObjectiveSelector } from './components/ObjectiveSelector';
 import { ConstraintBuilder } from './components/ConstraintBuilder';
@@ -26,8 +26,7 @@ const objectiveMap: Record<ObjectiveKey, {
 
 // 3. Util: convert ConstraintConfig[] to array of (w) => tf.Scalar functions, all type-safe
 function buildConstraintFns(
-  constraints: ConstraintConfig[],
-  assets: string[]
+  constraints: ConstraintConfig[]
 ): Array<(w: tf.Tensor) => tf.Scalar> {
   return constraints.map(cfg => {
     switch (cfg.key) {
@@ -83,7 +82,7 @@ export default function App() {
   const runOptimization = async () => {
     setLoading(true);
     try {
-      const constraintFns = buildConstraintFns(constraints, assets);
+      const constraintFns = buildConstraintFns(constraints);
 
       // Single portfolio optimization (with selected objective)
       const opt = new EfficientOptimizer(returns, cov);

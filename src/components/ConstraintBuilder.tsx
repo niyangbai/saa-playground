@@ -24,7 +24,7 @@ interface ConstraintBuilderProps {
 }
 
 export const ConstraintBuilder: React.FC<ConstraintBuilderProps> = ({
-  assets, constraints, setConstraints
+  constraints, setConstraints
 }) => {
   const [type, setType] = useState(CONSTRAINT_TYPES[0].key);
   const [form, setForm] = useState<Record<string, string>>({});
