@@ -1,7 +1,7 @@
 import * as tf from '@tensorflow/tfjs';
 import { EfficientOptimizer } from './efficientOptimizer.ts';
 import * as obj from './objectives.ts';
-import * as cons from './constraints.ts';
+// import * as cons from './constraints.ts';
 
 export type FrontierPoint = {
   targetReturn: number;
