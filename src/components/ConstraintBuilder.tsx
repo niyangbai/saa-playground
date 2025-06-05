@@ -7,6 +7,11 @@ const CONSTRAINT_TYPES = [
   { key: "groupMax", label: "Group Max", fields: ["groupIdx", "max"] },
   { key: "groupMin", label: "Group Min", fields: ["groupIdx", "min"] },
   { key: "maxWeight", label: "Max Weight", fields: ["max"] },
+  { key: "betweenMinusOneAndOne", label: "Between -1 and 1", fields: [] },
+  { key: "sumToTarget", label: "Sum to Target", fields: ["target"] },
+  { key: "minWeight", label: "Min Weight", fields: ["min"] },
+  { key: "turnover", label: "Turnover", fields: ["prevW", "maxTurnover"] },
+  { key: "riskBudget", label: "Risk Budget", fields: ["cov", "maxFraction"] },
 ];
 
 // Types for config (for your buildConstraintFns)
@@ -15,7 +20,12 @@ export type ConstraintConfig =
   | { key: "bounds"; minVec: string; maxVec: string }
   | { key: "groupMax"; groupIdx: string; max: string }
   | { key: "groupMin"; groupIdx: string; min: string }
-  | { key: "maxWeight"; max: string };
+  | { key: "maxWeight"; max: string }
+  | { key: "betweenMinusOneAndOne" }
+  | { key: "sumToTarget"; target: string }
+  | { key: "minWeight"; min: string }
+  | { key: "turnover"; prevW: string; maxTurnover: string }
+  | { key: "riskBudget"; cov: string; maxFraction: string };
 
 interface ConstraintBuilderProps {
   assets: string[];
@@ -41,6 +51,16 @@ export const ConstraintBuilder: React.FC<ConstraintBuilderProps> = ({
       newConfig = { key: "groupMin", groupIdx: form.groupIdx ?? "", min: form.min ?? "" };
     } else if (type === "maxWeight") {
       newConfig = { key: "maxWeight", max: form.max ?? "" };
+    } else if (type === "betweenMinusOneAndOne") {
+      newConfig = { key: "betweenMinusOneAndOne" };
+    } else if (type === "sumToTarget") {
+      newConfig = { key: "sumToTarget", target: form.target ?? "" };
+    } else if (type === "minWeight") {
+      newConfig = { key: "minWeight", min: form.min ?? "" };
+    } else if (type === "turnover") {
+      newConfig = { key: "turnover", prevW: form.prevW ?? "", maxTurnover: form.maxTurnover ?? "" };
+    } else if (type === "riskBudget") {
+      newConfig = { key: "riskBudget", cov: form.cov ?? "", maxFraction: form.maxFraction ?? "" };
     } else {
       return; // unknown constraint
     }
@@ -85,6 +105,11 @@ export const ConstraintBuilder: React.FC<ConstraintBuilderProps> = ({
             {c.key === "groupMax" && `Group Max: idx=[${c.groupIdx}], max=${c.max}`}
             {c.key === "groupMin" && `Group Min: idx=[${c.groupIdx}], min=${c.min}`}
             {c.key === "maxWeight" && `Max Weight: ${c.max}`}
+            {c.key === "betweenMinusOneAndOne" && `Between -1 and 1`}
+            {c.key === "sumToTarget" && `Sum to Target: ${c.target}`}
+            {c.key === "minWeight" && `Min Weight: ${c.min}`}
+            {c.key === "turnover" && `Turnover: prevW=[${c.prevW}], maxTurnover=${c.maxTurnover}`}
+            {c.key === "riskBudget" && `Risk Budget: cov=${c.cov}, maxFraction=${c.maxFraction}`}
             <button onClick={() => handleRemove(i)} style={{marginLeft:8}}>Remove</button>
           </li>
         ))}

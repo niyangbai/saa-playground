@@ -20,6 +20,7 @@ export class EfficientOptimizer {
   async optimize(
     objective: ObjectiveFn,
     direction: Direction = 'minimize',
+    targetSum: number = 1,
   ): Promise<number[]> {
     const n = this.mu.length;
     const w = tf.variable(tf.fill([n], 1 / n));
@@ -39,8 +40,8 @@ export class EfficientOptimizer {
     // Run Adam optimizer for a fixed number of steps
     const optimizer = tf.train.adam(0.05);
     for (let step = 0; step < 200; ++step) {
-      optimizer.minimize(() => lossFn(w), /* returnCost */ false);
-      w.assign(w.div(w.sum()));
+      optimizer.minimize(() => lossFn(w), false);
+      w.assign(w.div(w.sum()).mul(targetSum));
     }
 
     // Extract weights and update performance stats

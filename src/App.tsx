@@ -49,6 +49,20 @@ function buildConstraintFns(
       }
       case 'maxWeight':
         return (w: tf.Tensor) => cons.maxWeight(Number(cfg.max))(w).asScalar();
+      case 'betweenMinusOneAndOne':
+        return (w: tf.Tensor) => cons.betweenMinusOneAndOne()(w).asScalar();
+      case 'sumToTarget':
+        return (w: tf.Tensor) => cons.sumToTarget(Number(cfg.target))(w).asScalar();
+      case 'minWeight':
+        return (w: tf.Tensor) => cons.minWeight(Number(cfg.min))(w).asScalar();
+      case 'turnover': {
+        const prevW = cfg.prevW.split(',').map((s: string) => Number(s.trim()));
+        return (w: tf.Tensor) => cons.turnover(prevW, Number(cfg.maxTurnover))(w).asScalar();
+      }
+      case 'riskBudget': {
+        const cov = JSON.parse(cfg.cov); // expects a JSON string for the covariance matrix
+        return (w: tf.Tensor) => cons.riskBudget(cov, Number(cfg.maxFraction))(w).asScalar();
+      }
       default:
         throw new Error(`Unknown constraint key: ${(cfg as any).key}`);
     }
@@ -68,7 +82,7 @@ export default function App() {
   const [assets, setAssets] = useState<string[]>(DEFAULT_ASSETS);
   const [returns, setReturns] = useState<number[]>(DEFAULT_RETURNS);
   const [cov, setCov] = useState<number[][]>(DEFAULT_COV);
-  const [objective, setObjective] = useState<ObjectiveKey>('min_vol');
+  const [objective, setObjective] = useState<ObjectiveKey>('max_sharpe');
   const [constraints, setConstraints] = useState<ConstraintConfig[]>([
     { key: 'sumToOne' },
     { key: 'noShort' }
@@ -88,7 +102,9 @@ export default function App() {
       const opt = new EfficientOptimizer(returns, cov);
       constraintFns.forEach(fn => opt.addConstraint(fn));
       const { fn, direction } = objectiveMap[objective];
-      await opt.optimize(fn, direction);
+      const sumToTargetCfg = constraints.find(c => c.key === 'sumToTarget');
+      const targetSum = sumToTargetCfg ? Number(sumToTargetCfg.target) : 1;
+      await opt.optimize(fn, direction, targetSum);
       setWeights(opt.getWeights());
       setStats(opt.getPerformance());
 

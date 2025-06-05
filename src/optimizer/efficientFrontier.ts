@@ -27,7 +27,7 @@ export async function computeEfficientFrontier(
     constraintFns.forEach(fn => opt.addConstraint(fn));
 
     // Always enforce sum-to-one (unless user wants otherwise)
-    opt.addConstraint(cons.sumToOne());
+    // opt.addConstraint(cons.sumToOne());
 
     // Target return constraint for this frontier point
     opt.addConstraint(w => {
