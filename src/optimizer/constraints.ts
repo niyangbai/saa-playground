@@ -1,5 +1,17 @@
 import * as tf from '@tensorflow/tfjs';
 
+/** All weights between -1 and 1 */
+export function betweenMinusOneAndOne(penalty = 1000) {
+  return (w: tf.Tensor) =>
+    tf.add(tf.sum(tf.relu(w.sub(1))), tf.sum(tf.relu(tf.neg(w).sub(1))))
+      .mul(penalty) as tf.Scalar;
+}
+
+/** Sum to target: sum(w) == target */
+export function sumToTarget(target: number, penalty = 1000) {
+  return (w: tf.Tensor) => tf.square(tf.sum(w).sub(target)).mul(penalty) as tf.Scalar;
+}
+
 /** No shorting: all weights >= 0 */
 export function noShort(penalty = 1000) {
   return (w: tf.Tensor) => tf.sum(tf.relu(tf.neg(w))).mul(penalty) as tf.Scalar;

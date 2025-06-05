@@ -23,49 +23,69 @@ export class EfficientOptimizer {
   ): Promise<number[]> {
     const n = this.mu.length;
     const w = tf.variable(tf.fill([n], 1 / n));
-    const mu = tf.tensor1d(this.mu);
-    const cov = tf.tensor2d(this.cov);
+    const muT = tf.tensor1d(this.mu);
+    const covT = tf.tensor2d(this.cov);
 
+    // Objective with constraints
     const lossFn = (w: tf.Tensor) => {
-      let obj = objective(w, mu, cov);
-      if (direction === 'maximize') obj = tf.neg(obj);
-      let loss = obj;
-      for (const c of this.constraints) loss = loss.add(c(w));
+      let loss = objective(w, muT, covT);
+      if (direction === 'maximize') loss = tf.neg(loss);
+      for (const constraint of this.constraints) {
+        loss = loss.add(constraint(w));
+      }
       return loss;
     };
 
-    const opt = tf.train.adam(0.05);
-    for (let i = 0; i < 200; ++i) {
-      opt.minimize(() => lossFn(w), false);
+    // Run Adam optimizer for a fixed number of steps
+    const optimizer = tf.train.adam(0.05);
+    for (let step = 0; step < 200; ++step) {
+      optimizer.minimize(() => lossFn(w), /* returnCost */ false);
+      w.assign(w.div(w.sum()));
     }
+
+    // Extract weights and update performance stats
     const weights = Array.from(await w.data());
     this.latestWeights = weights;
     this._updateStats(weights, objective);
 
-    w.dispose(); mu.dispose(); cov.dispose();
+    // Dispose tensors
+    w.dispose();
+    muT.dispose();
+    covT.dispose();
+
     return weights;
   }
 
   _updateStats(weights: number[], objective: ObjectiveFn) {
-    this.lastPerf = {
-      ret: weights.reduce((s, wi, i) => s + wi * this.mu[i], 0),
-      risk: (() => {
-        let risk = 0;
-        for (let i = 0; i < weights.length; ++i)
-          for (let j = 0; j < weights.length; ++j)
-            risk += weights[i] * weights[j] * this.cov[i][j];
-        return Math.sqrt(risk);
-      })(),
-      obj: 0 // Calculated below
-    };
+    // Compute return and risk
+    const ret = weights.reduce((sum, wi, i) => sum + wi * this.mu[i], 0);
+
+    let risk = 0;
+    for (let i = 0; i < weights.length; ++i) {
+      for (let j = 0; j < weights.length; ++j) {
+        risk += weights[i] * weights[j] * this.cov[i][j];
+      }
+    }
+    risk = Math.sqrt(risk);
+
     // Compute value of the objective
     const wT = tf.tensor1d(weights);
     const muT = tf.tensor1d(this.mu);
     const covT = tf.tensor2d(this.cov);
-    this.lastPerf.obj = objective(wT, muT, covT).arraySync() as number;
-    wT.dispose(); muT.dispose(); covT.dispose();
+    const objValue = objective(wT, muT, covT).arraySync() as number;
+
+    this.lastPerf = { ret, risk, obj: objValue };
+
+    wT.dispose();
+    muT.dispose();
+    covT.dispose();
   }
 
-  getWeights() { return this.latestWeights; }
-  getPerformance() { return this.lastPerf; }
+  getWeights() {
+    return this.latestWeights;
+  }
+
+  getPerformance() {
+    return this.lastPerf;
+  }
 }
