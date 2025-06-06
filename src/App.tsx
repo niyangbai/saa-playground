@@ -1,4 +1,12 @@
 import { useState } from 'react';
+import Container from '@mui/material/Container';
+import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import Link from '@mui/material/Link';
 import { AssetInputPanel } from './components/AssetInputPanel';
 import { ObjectiveSelector } from './components/ObjectiveSelector';
 import { ConstraintBuilder } from './components/ConstraintBuilder';
@@ -11,10 +19,10 @@ import * as cons from './optimizer/constraints';
 import { computeEfficientFrontier } from './optimizer/efficientFrontier';
 import * as tf from '@tensorflow/tfjs';
 
-// 1. Strict type for allowed objectives
 type ObjectiveKey = 'min_vol' | 'max_sharpe' | 'max_div';
 
-// 2. Objective map type (and the runtime object)
+const GITHUB_URL = "https://github.com/niyangbai/saa-playground";
+
 const objectiveMap: Record<ObjectiveKey, {
   fn: (w: tf.Tensor, mu: tf.Tensor1D, cov: tf.Tensor2D) => tf.Scalar,
   direction: 'minimize' | 'maximize'
@@ -24,7 +32,6 @@ const objectiveMap: Record<ObjectiveKey, {
   max_div: { fn: obj.diversificationRatio, direction: 'maximize' },
 };
 
-// 3. Util: convert ConstraintConfig[] to array of (w) => tf.Scalar functions, all type-safe
 function buildConstraintFns(
   constraints: ConstraintConfig[]
 ): Array<(w: tf.Tensor) => tf.Scalar> {
@@ -60,7 +67,7 @@ function buildConstraintFns(
         return (w: tf.Tensor) => cons.turnover(prevW, Number(cfg.maxTurnover))(w).asScalar();
       }
       case 'riskBudget': {
-        const cov = JSON.parse(cfg.cov); // expects a JSON string for the covariance matrix
+        const cov = JSON.parse(cfg.cov);
         return (w: tf.Tensor) => cons.riskBudget(cov, Number(cfg.maxFraction))(w).asScalar();
       }
       default:
@@ -78,7 +85,6 @@ const DEFAULT_COV = [
 ];
 
 export default function App() {
-  // 4. All state fully typed
   const [assets, setAssets] = useState<string[]>(DEFAULT_ASSETS);
   const [returns, setReturns] = useState<number[]>(DEFAULT_RETURNS);
   const [cov, setCov] = useState<number[][]>(DEFAULT_COV);
@@ -91,14 +97,12 @@ export default function App() {
   const [weights, setWeights] = useState<number[] | null>(null);
   const [stats, setStats] = useState<Record<string, number> | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [efLoading, setEfLoading] = useState<boolean>(false);
 
-  // 5. Main optimization handler
   const runOptimization = async () => {
     setLoading(true);
     try {
       const constraintFns = buildConstraintFns(constraints);
-
-      // Single portfolio optimization (with selected objective)
       const opt = new EfficientOptimizer(returns, cov);
       constraintFns.forEach(fn => opt.addConstraint(fn));
       const { fn, direction } = objectiveMap[objective];
@@ -107,52 +111,121 @@ export default function App() {
       await opt.optimize(fn, direction, targetSum);
       setWeights(opt.getWeights());
       setStats(opt.getPerformance());
-
-      // Efficient frontier (always uses variance for curve; applies all constraints)
-      const f = await computeEfficientFrontier(returns, cov, 30, constraintFns);
-      setFrontier(f);
     } finally {
       setLoading(false);
     }
   };
 
+  const runEfficientFrontier = async () => {
+    setEfLoading(true);
+    try {
+      const constraintFns = buildConstraintFns(constraints);
+      const f = await computeEfficientFrontier(returns, cov, 30, constraintFns);
+      setFrontier(f);
+    } finally {
+      setEfLoading(false);
+    }
+  };
+
   return (
-    <div className="app-main-container">
-      <h2>SAA Playground</h2>
-      <div className="section-card">
-        <AssetInputPanel
-          assets={assets}
-          returns={returns}
-          cov={cov}
-          setAssets={setAssets}
-          setReturns={setReturns}
-          setCov={setCov}
-        />
-      </div>
-      <div className="section-card">
-        <ObjectiveSelector
-          objective={objective}
-          setObjective={setObjective}
-        />
-      </div>
-      <div className="section-card">
-        <ConstraintBuilder
-          assets={assets}
-          constraints={constraints}
-          setConstraints={setConstraints}
-        />
-      </div>
-      <div style={{textAlign: "center", marginBottom: 18}}>
-        <button onClick={runOptimization} disabled={loading}>
-          {loading ? "Optimizing..." : "Run Optimization"}
-        </button>
-      </div>
-      <div className="section-card">
-        <FrontierPlot data={frontier}/>
-      </div>
-      <div className="section-card">
-        <OutputPanel weights={weights} stats={stats} assets={assets}/>
-      </div>
-    </div>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 2 }}>
+      <Container maxWidth={false} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', minHeight: '90vh' }}>
+        <Paper elevation={3} sx={{ p: { xs: 1, md: 4 }, borderRadius: 4, width: '100%', maxWidth: 1400 }}>
+          {/* Header with badges and GitHub */}
+          <Box sx={{ display: 'flex', alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', flexDirection: { xs: 'column', sm: 'row' }, mb: 2 }}>
+            <Box>
+              <Typography variant="h3" fontWeight="bold" color="primary.main" gutterBottom>
+                SAA Playground
+              </Typography>
+              <Divider sx={{ mb: 1, width: 120, borderBottomWidth: 3, borderColor: 'primary.main' }} />
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap', mt: { xs: 2, sm: 0 } }}>
+              <img src="https://img.shields.io/badge/license-AGPL-green" alt="AGPL License" />
+              <img src="https://img.shields.io/badge/node-%3E%3D16.0-blue" alt="Node.js Version" />
+              <img src="https://img.shields.io/badge/built%20with-vite-646CFF" alt="Vite" />
+              <Link href={GITHUB_URL} target="_blank" rel="noopener" sx={{ ml: 1 }}>
+                <GitHubIcon fontSize="large" />
+              </Link>
+            </Box>
+          </Box>
+          {/* Main layout */}
+          <Box sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            gap: 4,
+            width: '100%',
+            minHeight: '70vh',
+          }}>
+            {/* Left: Inputs */}
+            <Box sx={{ flex: 1, minWidth: 320, maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
+                <AssetInputPanel
+                  assets={assets}
+                  returns={returns}
+                  cov={cov}
+                  setAssets={setAssets}
+                  setReturns={setReturns}
+                  setCov={setCov}
+                />
+              </Paper>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2 }}>
+                <ObjectiveSelector
+                  objective={objective}
+                  setObjective={setObjective}
+                />
+              </Paper>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2, flex: 1 }}>
+                <ConstraintBuilder
+                  assets={assets}
+                  constraints={constraints}
+                  setConstraints={setConstraints}
+                />
+              </Paper>
+            </Box>
+            {/* Right: Results */}
+            <Box sx={{ flex: 2, minWidth: 340, display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2, mb: 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <OutputPanel weights={weights} stats={stats} assets={assets} />
+                <Box mt={3} mb={2}>
+                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={runOptimization}
+                      disabled={loading}
+                      size="large"
+                      sx={{ minWidth: 180, flex: 1 }}
+                    >
+                      {loading ? "Optimizing..." : "Run Optimization"}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={runEfficientFrontier}
+                      disabled={efLoading}
+                      size="large"
+                      sx={{ minWidth: 180, flex: 1 }}
+                    >
+                      {efLoading ? "Computing Efficient Frontier..." : "Compute Efficient Frontier"}
+                    </Button>
+                  </Box>
+                </Box>
+                <Box mt={1} sx={{ flex: 1, minHeight: 300, width: '100%' }}>
+                  <Paper elevation={0} sx={{ p: 1, bgcolor: 'background.default', borderRadius: 2, height: '100%', width: '100%' }}>
+                    <FrontierPlot data={frontier} />
+                  </Paper>
+                </Box>
+              </Paper>
+            </Box>
+          </Box>
+          {/* Disclaimer */}
+          <Box sx={{ mt: 4, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              Disclaimer: This tool is for educational and demonstration purposes only. Not financial advice.
+            </Typography>
+          </Box>
+        </Paper>
+      </Container>
+    </Box>
   );
 }

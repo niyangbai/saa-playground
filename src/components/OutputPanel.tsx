@@ -1,25 +1,28 @@
 import React from 'react';
+import { Box, Typography, List, ListItem } from '@mui/material';
 
 export const OutputPanel: React.FC<{
   weights: number[] | null,
   stats: Record<string, number> | null,
   assets: string[]
 }> = ({ weights, stats, assets }) => (
-  <div>
-    <h4>Optimized Portfolio</h4>
+  <Box>
+    <Typography variant="h6" gutterBottom>Optimized Portfolio</Typography>
     {weights ? (
-      <ul>
+      <List dense>
         {assets.map((name, i) =>
-          <li key={name}>{name}: {(weights[i]*100).toFixed(2)}%</li>
+          <ListItem key={name}>
+            <Typography variant="body2">{name}: {(weights[i]*100).toFixed(2)}%</Typography>
+          </ListItem>
         )}
-      </ul>
-    ) : <span>No result</span>}
+      </List>
+    ) : <Typography variant="body2">No result</Typography>}
     {stats && (
-      <div>
-        <div>Expected Return: {stats.ret?.toFixed(4)}</div>
-        <div>Risk (Std Dev): {stats.risk?.toFixed(4)}</div>
-        <div>Objective: {stats.obj?.toFixed(4)}</div>
-      </div>
+      <Box mt={2}>
+        <Typography variant="body2">Expected Return: {stats.ret?.toFixed(4)}</Typography>
+        <Typography variant="body2">Risk (Std Dev): {stats.risk?.toFixed(4)}</Typography>
+        <Typography variant="body2">Objective: {stats.obj?.toFixed(4)}</Typography>
+      </Box>
     )}
-  </div>
+  </Box>
 );

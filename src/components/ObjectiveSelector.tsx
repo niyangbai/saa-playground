@@ -1,11 +1,8 @@
-// src/components/ObjectiveSelector.tsx
-
 import React from 'react';
+import { Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
-// 1. Import the same union type for objectives:
 export type ObjectiveKey = 'min_vol' | 'max_sharpe' | 'max_div';
 
-// 2. Props accept only this type:
 export interface ObjectiveSelectorProps {
   objective: ObjectiveKey;
   setObjective: (s: ObjectiveKey) => void;
@@ -14,15 +11,19 @@ export interface ObjectiveSelectorProps {
 export const ObjectiveSelector: React.FC<ObjectiveSelectorProps> = ({
   objective, setObjective,
 }) => (
-  <div>
-    <label>Optimization Objective: </label>
-    <select
-      value={objective}
-      onChange={e => setObjective(e.target.value as ObjectiveKey)}
-    >
-      <option value="min_vol">Min Volatility</option>
-      <option value="max_sharpe">Max Sharpe</option>
-      <option value="max_div">Max Diversification</option>
-    </select>
-  </div>
+  <Box>
+    <FormControl fullWidth>
+      <InputLabel id="objective-label">Optimization Objective</InputLabel>
+      <Select
+        labelId="objective-label"
+        value={objective}
+        label="Optimization Objective"
+        onChange={e => setObjective(e.target.value as ObjectiveKey)}
+      >
+        <MenuItem value="min_vol">Min Volatility</MenuItem>
+        <MenuItem value="max_sharpe">Max Sharpe</MenuItem>
+        <MenuItem value="max_div">Max Diversification</MenuItem>
+      </Select>
+    </FormControl>
+  </Box>
 );

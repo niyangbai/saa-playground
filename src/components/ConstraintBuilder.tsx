@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Box, Typography, Button, Select, MenuItem, TextField, IconButton, List, ListItem } from "@mui/material";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const CONSTRAINT_TYPES = [
   { key: "noShort", label: "No Shorting", fields: [] },
@@ -14,7 +16,6 @@ const CONSTRAINT_TYPES = [
   { key: "riskBudget", label: "Risk Budget", fields: ["cov", "maxFraction"] },
 ];
 
-// Types for config (for your buildConstraintFns)
 export type ConstraintConfig =
   | { key: "noShort" | "sumToOne" }
   | { key: "bounds"; minVec: string; maxVec: string }
@@ -62,7 +63,7 @@ export const ConstraintBuilder: React.FC<ConstraintBuilderProps> = ({
     } else if (type === "riskBudget") {
       newConfig = { key: "riskBudget", cov: form.cov ?? "", maxFraction: form.maxFraction ?? "" };
     } else {
-      return; // unknown constraint
+      return;
     }
     setConstraints([...constraints, newConfig]);
     setForm({});
@@ -75,45 +76,57 @@ export const ConstraintBuilder: React.FC<ConstraintBuilderProps> = ({
   const renderFields = () => {
     const fields = CONSTRAINT_TYPES.find(ct => ct.key === type)?.fields || [];
     return fields.map(field => (
-      <input
+      <TextField
         key={field}
-        type="text"
-        placeholder={field}
+        label={field}
         value={form[field] || ""}
         onChange={e => setForm({ ...form, [field]: e.target.value })}
-        style={{ marginRight: 8 }}
+        size="small"
+        sx={{ mr: 1, width: 120 }}
       />
     ));
   };
 
   return (
-    <div style={{margin: "16px 0"}}>
-      <h4>Constraints</h4>
-      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
-        <select value={type} onChange={e => { setType(e.target.value); setForm({}); }}>
-          {CONSTRAINT_TYPES.map(ct => <option value={ct.key} key={ct.key}>{ct.label}</option>)}
-        </select>
+    <Box>
+      <Typography variant="h6" gutterBottom>Constraints</Typography>
+      <Box display="flex" alignItems="center" gap={1} mb={2}>
+        <Select
+          value={type}
+          onChange={e => { setType(e.target.value); setForm({}); }}
+          size="small"
+        >
+          {CONSTRAINT_TYPES.map(ct => <MenuItem value={ct.key} key={ct.key}>{ct.label}</MenuItem>)}
+        </Select>
         {renderFields()}
-        <button onClick={handleAdd}>Add Constraint</button>
-      </div>
-      <ul>
+        <Button variant="contained" onClick={handleAdd} size="small">Add</Button>
+      </Box>
+      <List dense>
         {constraints.map((c, i) => (
-          <li key={i} style={{marginBottom:4}}>
-            {c.key === "noShort" && "No Shorting"}
-            {c.key === "sumToOne" && "Sum to One"}
-            {c.key === "bounds" && `Per-Asset Bounds: min=[${c.minVec}], max=[${c.maxVec}]`}
-            {c.key === "groupMax" && `Group Max: idx=[${c.groupIdx}], max=${c.max}`}
-            {c.key === "groupMin" && `Group Min: idx=[${c.groupIdx}], min=${c.min}`}
-            {c.key === "maxWeight" && `Max Weight: ${c.max}`}
-            {c.key === "betweenMinusOneAndOne" && `Between -1 and 1`}
-            {c.key === "sumToTarget" && `Sum to Target: ${c.target}`}
-            {c.key === "minWeight" && `Min Weight: ${c.min}`}
-            {c.key === "turnover" && `Turnover: prevW=[${c.prevW}], maxTurnover=${c.maxTurnover}`}
-            {c.key === "riskBudget" && `Risk Budget: cov=${c.cov}, maxFraction=${c.maxFraction}`}
-            <button onClick={() => handleRemove(i)} style={{marginLeft:8}}>Remove</button>
-          </li>
+          <ListItem
+            key={i}
+            secondaryAction={
+              <IconButton edge="end" aria-label="delete" onClick={() => handleRemove(i)}>
+                <DeleteIcon />
+              </IconButton>
+            }
+          >
+            <Typography variant="body2">
+              {c.key === "noShort" && "No Shorting"}
+              {c.key === "sumToOne" && "Sum to One"}
+              {c.key === "bounds" && `Per-Asset Bounds: min=[${c.minVec}], max=[${c.maxVec}]`}
+              {c.key === "groupMax" && `Group Max: idx=[${c.groupIdx}], max=${c.max}`}
+              {c.key === "groupMin" && `Group Min: idx=[${c.groupIdx}], min=${c.min}`}
+              {c.key === "maxWeight" && `Max Weight: ${c.max}`}
+              {c.key === "betweenMinusOneAndOne" && `Between -1 and 1`}
+              {c.key === "sumToTarget" && `Sum to Target: ${c.target}`}
+              {c.key === "minWeight" && `Min Weight: ${c.min}`}
+              {c.key === "turnover" && `Turnover: prevW=[${c.prevW}], maxTurnover=${c.maxTurnover}`}
+              {c.key === "riskBudget" && `Risk Budget: cov=${c.cov}, maxFraction=${c.maxFraction}`}
+            </Typography>
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Box>
   );
 };
