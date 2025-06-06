@@ -21,7 +21,7 @@ import * as tf from '@tensorflow/tfjs';
 
 type ObjectiveKey = 'min_vol' | 'max_sharpe' | 'max_div';
 
-const GITHUB_URL = "https://github.com/niyangbai/saa-playground";
+const GITHUB_URL = "https://github.com/niyangbai/saa-playground"; 
 
 const objectiveMap: Record<ObjectiveKey, {
   fn: (w: tf.Tensor, mu: tf.Tensor1D, cov: tf.Tensor2D) => tf.Scalar,
@@ -174,7 +174,7 @@ export default function App() {
                   setObjective={setObjective}
                 />
               </Paper>
-              <Paper elevation={1} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2, flex: 1 }}>
+              <Paper elevation={1} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2, flexGrow: 1 }}>
                 <ConstraintBuilder
                   assets={assets}
                   constraints={constraints}
@@ -183,7 +183,7 @@ export default function App() {
               </Paper>
             </Box>
             {/* Right: Results */}
-            <Box sx={{ flex: 2, minWidth: 340, display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <Box sx={{ flex: 2, minWidth: 340, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
               <Paper elevation={1} sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 2, mb: 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <OutputPanel weights={weights} stats={stats} assets={assets} />
                 <Box mt={3} mb={2}>
