@@ -55,14 +55,13 @@ npm run preview
 
 ```
 src/
-  App.tsx                # Main app UI
-  main.tsx               # React entrypoint
-  components/            # Asset input, constraints, plotting, etc.
-  optimizer/             # Core optimization engine, objectives, constraints
-public/
-  index.html             # App entry HTML
-vite.config.ts           # Vite project config
-tsconfig.json            # TypeScript config
+  App.tsx          # Main app UI
+  main.tsx         # React entrypoint
+  components/      # Asset input, constraints, plotting, etc.
+  optimizer/       # Core optimization engine, objectives, constraints
+index.html         # App entry HTML
+vite.config.ts     # Vite project config
+tsconfig.json      # TypeScript config
 ```
 
 ## Customization

@@ -117,30 +117,42 @@ export default function App() {
   };
 
   return (
-    <div style={{maxWidth: 900, margin: '0 auto', padding: 32}}>
+    <div className="app-main-container">
       <h2>SAA Playground</h2>
-      <AssetInputPanel
-        assets={assets}
-        returns={returns}
-        cov={cov}
-        setAssets={setAssets}
-        setReturns={setReturns}
-        setCov={setCov}
-      />
-      <ObjectiveSelector
-        objective={objective}
-        setObjective={setObjective}
-      />
-      <ConstraintBuilder
-        assets={assets}
-        constraints={constraints}
-        setConstraints={setConstraints}
-      />
-      <button onClick={runOptimization} disabled={loading} style={{margin:'12px 0'}}>
-        {loading ? "Optimizing..." : "Run Optimization"}
-      </button>
-      <FrontierPlot data={frontier}/>
-      <OutputPanel weights={weights} stats={stats} assets={assets}/>
+      <div className="section-card">
+        <AssetInputPanel
+          assets={assets}
+          returns={returns}
+          cov={cov}
+          setAssets={setAssets}
+          setReturns={setReturns}
+          setCov={setCov}
+        />
+      </div>
+      <div className="section-card">
+        <ObjectiveSelector
+          objective={objective}
+          setObjective={setObjective}
+        />
+      </div>
+      <div className="section-card">
+        <ConstraintBuilder
+          assets={assets}
+          constraints={constraints}
+          setConstraints={setConstraints}
+        />
+      </div>
+      <div style={{textAlign: "center", marginBottom: 18}}>
+        <button onClick={runOptimization} disabled={loading}>
+          {loading ? "Optimizing..." : "Run Optimization"}
+        </button>
+      </div>
+      <div className="section-card">
+        <FrontierPlot data={frontier}/>
+      </div>
+      <div className="section-card">
+        <OutputPanel weights={weights} stats={stats} assets={assets}/>
+      </div>
     </div>
   );
 }
