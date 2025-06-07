@@ -7,6 +7,8 @@ import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import Link from '@mui/material/Link';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import { AssetInputPanel } from './components/AssetInputPanel';
 import { ObjectiveSelector } from './components/ObjectiveSelector';
 import { ConstraintBuilder } from './components/ConstraintBuilder';
@@ -98,6 +100,7 @@ export default function App() {
   const [stats, setStats] = useState<Record<string, number> | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [efLoading, setEfLoading] = useState<boolean>(false);
+  const [showAllPoints, setShowAllPoints] = useState(false);
 
   const runOptimization = async () => {
     setLoading(true);
@@ -214,8 +217,20 @@ export default function App() {
                 </Box>
                 <Box mt={1} sx={{ flex: 1, minHeight: 300, width: '100%' }}>
                   <Paper elevation={0} sx={{ p: 1, bgcolor: 'background.default', borderRadius: 2, height: '100%', width: '100%' }}>
-                    <FrontierPlot data={frontier} />
+                    <FrontierPlot data={frontier} showAllPoints={showAllPoints} />
                   </Paper>
+                  <Box sx={{ mt: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={showAllPoints}
+                          onChange={(_, checked) => setShowAllPoints(checked)}
+                          color="primary"
+                        />
+                      }
+                      label="Show all points"
+                    />
+                  </Box>
                 </Box>
               </Paper>
             </Box>

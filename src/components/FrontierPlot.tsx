@@ -53,41 +53,6 @@ function getAxisMinMax(values: number[]) {
   return [min - pad, max + pad];
 }
 
-// Andrew's monotone chain convex hull (returns points on the hull, counterclockwise)
-function convexHull(points: FrontierPoint[]): FrontierPoint[] {
-  if (points.length <= 1) return [...points];
-  const pts = points
-    .map((p) => ({ ...p }))
-    .sort((a, b) => a.risk - b.risk || a.ret - b.ret);
-
-  function cross(o: FrontierPoint, a: FrontierPoint, b: FrontierPoint) {
-    return (a.risk - o.risk) * (b.ret - o.ret) - (a.ret - o.ret) * (b.risk - o.risk);
-  }
-
-  const lower: FrontierPoint[] = [];
-  for (const p of pts) {
-    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) {
-      lower.pop();
-    }
-    lower.push(p);
-  }
-
-  const upper: FrontierPoint[] = [];
-  for (let i = pts.length - 1; i >= 0; --i) {
-    const p = pts[i];
-    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) {
-      upper.pop();
-    }
-    upper.push(p);
-  }
-
-  // Remove the first and last point of upper to avoid duplicates
-  lower.pop();
-  upper.pop();
-
-  return [...lower, ...upper];
-}
-
 // Returns only the upper (efficient) frontier, sorted by risk ascending
 function efficientFrontier(points: FrontierPoint[]): FrontierPoint[] {
   if (points.length <= 1) return [...points];
