@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export interface FrontierPoint {
@@ -8,7 +8,7 @@ export interface FrontierPoint {
   ret: number;
 }
 
-const CustomTooltip = ({ active, payload }: any) => {
+const CustomTooltip = React.memo(({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const ret = payload[0].payload.ret ?? payload[0].payload.targetReturn;
     const risk = payload[0].payload.risk;
@@ -28,7 +28,7 @@ const CustomTooltip = ({ active, payload }: any) => {
     );
   }
   return null;
-};
+});
 
 function getAxisMinMax(values: number[]) {
   const min = Math.min(...values);
@@ -38,11 +38,11 @@ function getAxisMinMax(values: number[]) {
   return [min - pad, max + pad];
 }
 
-export const FrontierPlot: React.FC<{ data: FrontierPoint[] }> = ({ data }) => {
-  const risks = data.map(d => d.risk);
-  const rets = data.map(d => d.ret);
-  const [riskMin, riskMax] = getAxisMinMax(risks);
-  const [retMin, retMax] = getAxisMinMax(rets);
+export const FrontierPlot: React.FC<{ data: FrontierPoint[] }> = React.memo(({ data }) => {
+  const risks = useMemo(() => data.map(d => d.risk), [data]);
+  const rets = useMemo(() => data.map(d => d.ret), [data]);
+  const [riskMin, riskMax] = useMemo(() => getAxisMinMax(risks), [risks]);
+  const [retMin, retMax] = useMemo(() => getAxisMinMax(rets), [rets]);
 
   return (
     <div style={{ width: '100%', height: 600 }}>
@@ -58,7 +58,7 @@ export const FrontierPlot: React.FC<{ data: FrontierPoint[] }> = ({ data }) => {
               value: "Risk (Std Dev)",
               position: "insideBottom",
               offset: 0,
-              dy: 25, // move label further down
+              dy: 25,
               style: { fill: "#8884d8", fontWeight: 700, fontSize: 28 }
             }}
             tickFormatter={v => (Number(v) * 100).toFixed(2) + '%'}
@@ -91,4 +91,4 @@ export const FrontierPlot: React.FC<{ data: FrontierPoint[] }> = ({ data }) => {
       </ResponsiveContainer>
     </div>
   );
-};
+});
