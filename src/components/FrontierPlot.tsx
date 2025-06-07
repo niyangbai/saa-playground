@@ -58,11 +58,11 @@ export const FrontierPlot: React.FC<{ data: FrontierPoint[] }> = ({ data }) => {
               value: "Risk (Std Dev)",
               position: "insideBottom",
               offset: 0,
-              dy: 28,
-              style: { fill: "#8884d8", fontWeight: 500 }
+              dy: 25, // move label further down
+              style: { fill: "#8884d8", fontWeight: 700, fontSize: 28 }
             }}
             tickFormatter={v => (Number(v) * 100).toFixed(2) + '%'}
-            tick={{ fill: "#555", fontSize: 13 }}
+            tick={{ fill: "#555", fontSize: 20 }}
             type="number"
           />
           <YAxis
@@ -72,12 +72,12 @@ export const FrontierPlot: React.FC<{ data: FrontierPoint[] }> = ({ data }) => {
               value: "Return",
               angle: -90,
               position: "insideLeft",
-              offset: -15,
+              offset: -40,
               dy: 0,
-              style: { fill: "#8884d8", fontWeight: 500 }
+              style: { fill: "#8884d8", fontWeight: 700, fontSize: 28 }
             }}
             tickFormatter={v => (Number(v) * 100).toFixed(2) + '%'}
-            tick={{ fill: "#555", fontSize: 13 }}
+            tick={{ fill: "#555", fontSize: 20 }}
             type="number"
           />
           <Tooltip content={<CustomTooltip />} />
