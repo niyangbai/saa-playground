@@ -21,14 +21,14 @@ export class EfficientOptimizer {
     objective: ObjectiveFn,
     direction: Direction = 'minimize',
     targetSum: number = 1,
-    noShorting: boolean = false
+    noShorting: boolean = false,
+    onStep?: (weights: number[], ret: number, risk: number) => void
   ): Promise<number[]> {
     const n = this.mu.length;
     const w = tf.variable(tf.fill([n], 1 / n));
     const muT = tf.tensor1d(this.mu);
     const covT = tf.tensor2d(this.cov);
 
-    // Objective with constraints
     const lossFn = (w: tf.Tensor) => {
       let loss = objective(w, muT, covT);
       if (direction === 'maximize') loss = tf.neg(loss);
@@ -38,26 +38,35 @@ export class EfficientOptimizer {
       return loss;
     };
 
-    // Run Adam optimizer for a fixed number of steps
     const optimizer = tf.train.adam(0.05);
     for (let step = 0; step < 200; ++step) {
       optimizer.minimize(() => lossFn(w), false);
-      // Project weights to sum to targetSum
       w.assign(w.div(w.sum()).mul(targetSum));
-      // If noShorting, project to non-negative
       if (noShorting) {
         w.assign(tf.maximum(w, 0));
-        // Re-normalize to sum to targetSum after projection
         w.assign(w.div(w.sum()).mul(targetSum));
+      }
+
+      // Collect intermediate points
+      if (onStep) {
+        const weights = Array.from(await w.data());
+        // Compute return and risk
+        const ret = weights.reduce((sum, wi, i) => sum + wi * this.mu[i], 0);
+        let risk = 0;
+        for (let i = 0; i < weights.length; ++i) {
+          for (let j = 0; j < weights.length; ++j) {
+            risk += weights[i] * weights[j] * this.cov[i][j];
+          }
+        }
+        risk = Math.sqrt(risk);
+        onStep(weights, ret, risk);
       }
     }
 
-    // Extract weights and update performance stats
     const weights = Array.from(await w.data());
     this.latestWeights = weights;
     this._updateStats(weights, objective);
 
-    // Dispose tensors
     w.dispose();
     muT.dispose();
     covT.dispose();

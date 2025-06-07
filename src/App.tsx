@@ -16,7 +16,7 @@ import { OutputPanel } from './components/OutputPanel';
 import { EfficientOptimizer } from './optimizer/efficientOptimizer';
 import * as obj from './optimizer/objectives';
 import * as cons from './optimizer/constraints';
-import { computeEfficientFrontier } from './optimizer/efficientFrontier';
+import { collectFrontierScatterPoints } from './optimizer/efficientFrontier';
 import * as tf from '@tensorflow/tfjs';
 
 type ObjectiveKey = 'min_vol' | 'max_sharpe' | 'max_div';
@@ -93,7 +93,7 @@ export default function App() {
     { key: 'sumToOne' },
     { key: 'noShort' }
   ]);
-  const [frontier, setFrontier] = useState<Array<{ targetReturn: number; risk: number; weights: number[] }>>([]);
+  const [frontier, setFrontier] = useState<Array<{ targetReturn: number; risk: number; weights: number[]; ret: number }>>([]);
   const [weights, setWeights] = useState<number[] | null>(null);
   const [stats, setStats] = useState<Record<string, number> | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -121,8 +121,9 @@ export default function App() {
     setEfLoading(true);
     try {
       const constraintFns = buildConstraintFns(constraints);
-      const f = await computeEfficientFrontier(returns, cov, 30, constraintFns);
-      setFrontier(f);
+      // Use the new scatter point collector
+      const scatterPoints = await collectFrontierScatterPoints(returns, cov, 30, constraintFns);
+      setFrontier(scatterPoints);
     } finally {
       setEfLoading(false);
     }
