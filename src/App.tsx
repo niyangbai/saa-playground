@@ -77,11 +77,11 @@ function buildConstraintFns(
 }
 
 const DEFAULT_ASSETS = ['A', 'B', 'C'];
-const DEFAULT_RETURNS = [0.12, 0.10, 0.08];
+const DEFAULT_RETURNS = [0.20, 0.10, 0.02];
 const DEFAULT_COV = [
-  [0.10, 0.03, 0.02],
-  [0.03, 0.12, 0.06],
-  [0.02, 0.06, 0.08],
+  [0.10, 0.02, 0.01],
+  [0.02, 0.12, 0.06],
+  [0.01, 0.06, 0.08],
 ];
 
 export default function App() {
@@ -108,7 +108,8 @@ export default function App() {
       const { fn, direction } = objectiveMap[objective];
       const sumToTargetCfg = constraints.find(c => c.key === 'sumToTarget');
       const targetSum = sumToTargetCfg ? Number(sumToTargetCfg.target) : 1;
-      await opt.optimize(fn, direction, targetSum);
+      const noShorting = constraints.some(c => c.key === 'noShort');
+      await opt.optimize(fn, direction, targetSum, noShorting);
       setWeights(opt.getWeights());
       setStats(opt.getPerformance());
     } finally {

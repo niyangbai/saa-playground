@@ -21,6 +21,7 @@ export class EfficientOptimizer {
     objective: ObjectiveFn,
     direction: Direction = 'minimize',
     targetSum: number = 1,
+    noShorting: boolean = false
   ): Promise<number[]> {
     const n = this.mu.length;
     const w = tf.variable(tf.fill([n], 1 / n));
@@ -41,7 +42,14 @@ export class EfficientOptimizer {
     const optimizer = tf.train.adam(0.05);
     for (let step = 0; step < 200; ++step) {
       optimizer.minimize(() => lossFn(w), false);
+      // Project weights to sum to targetSum
       w.assign(w.div(w.sum()).mul(targetSum));
+      // If noShorting, project to non-negative
+      if (noShorting) {
+        w.assign(tf.maximum(w, 0));
+        // Re-normalize to sum to targetSum after projection
+        w.assign(w.div(w.sum()).mul(targetSum));
+      }
     }
 
     // Extract weights and update performance stats

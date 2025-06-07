@@ -48,5 +48,24 @@ export async function computeEfficientFrontier(
       weights,
     });
   }
-  return points;
+
+  // Sort by risk (volatility), and for duplicate risks, keep the one with max return
+  points.sort((a, b) => a.risk - b.risk);
+
+  // Remove duplicates: keep only the point with max return for each unique risk
+  const uniquePoints: FrontierPoint[] = [];
+  let lastRisk: number | null = null;
+  const riskThreshold = 1e-5; // Increased threshold for deduplication
+  for (const pt of points) {
+    if (lastRisk === null || Math.abs(pt.risk - lastRisk) > riskThreshold) {
+      uniquePoints.push(pt);
+      lastRisk = pt.risk;
+    } else {
+      if (pt.targetReturn > uniquePoints[uniquePoints.length - 1].targetReturn) {
+        uniquePoints[uniquePoints.length - 1] = pt;
+      }
+    }
+  }
+
+  return uniquePoints;
 }
