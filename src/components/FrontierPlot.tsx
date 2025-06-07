@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useDeferredValue } from "react";
 import {
   ScatterChart,
   Scatter,
@@ -98,18 +98,23 @@ function lowerFrontier(points: FrontierPoint[]): FrontierPoint[] {
 // Main plot component
 export const FrontierPlot: React.FC<{ data: FrontierPoint[]; showAllPoints?: boolean }> = React.memo(
   ({ data, showAllPoints = false }) => {
-    const risks = useMemo(() => data.map((d) => d.risk), [data]);
-    const rets = useMemo(() => data.map((d) => d.ret), [data]);
+    const deferredData = useDeferredValue(data);
+
+    const risks = useMemo(() => deferredData.map((d) => d.risk), [deferredData]);
+    const rets = useMemo(() => deferredData.map((d) => d.ret), [deferredData]);
     const [riskMin, riskMax] = useMemo(() => getAxisMinMax(risks), [risks]);
     const [retMin, retMax] = useMemo(() => getAxisMinMax(rets), [rets]);
     const upperFrontier = useMemo(() => {
-      const arr = efficientFrontier(data);
+      const arr = efficientFrontier(deferredData);
       return arr.slice(0, -1); // remove most right
-    }, [data]);
+    }, [deferredData]);
     const lowerFrontierPoints = useMemo(() => {
-      const arr = lowerFrontier(data);
+      const arr = lowerFrontier(deferredData);
       return arr.slice(0, -1); // remove most right
-    }, [data]);
+    }, [deferredData]);
+
+    // Memoize all points for scatter
+    const allPointsScatterData = useMemo(() => deferredData, [deferredData]);
 
     return (
       <div style={{ width: "100%", height: 600 }}>
@@ -124,10 +129,10 @@ export const FrontierPlot: React.FC<{ data: FrontierPoint[]; showAllPoints?: boo
                 position: "insideBottom",
                 offset: 0,
                 dy: 25,
-                style: { fill: "#8884d8", fontWeight: 700, fontSize: 28 },
+                style: { fill: "#8884d8", fontWeight: 700, fontSize: 20 },
               }}
               tickFormatter={(v) => `${(Number(v) * 100).toFixed(2)}%`}
-              tick={{ fill: "#555", fontSize: 20 }}
+              tick={{ fill: "#555", fontSize: 14 }}
               type="number"
             />
             <YAxis
@@ -137,19 +142,19 @@ export const FrontierPlot: React.FC<{ data: FrontierPoint[]; showAllPoints?: boo
                 value: "Return",
                 angle: -90,
                 position: "insideLeft",
-                offset: -40,
+                offset: -25,
                 dy: 0,
-                style: { fill: "#8884d8", fontWeight: 700, fontSize: 28 },
+                style: { fill: "#8884d8", fontWeight: 700, fontSize: 20 },
               }}
               tickFormatter={(v) => `${(Number(v) * 100).toFixed(2)}%`}
-              tick={{ fill: "#555", fontSize: 20 }}
+              tick={{ fill: "#555", fontSize: 14 }}
               type="number"
             />
             <Tooltip content={<CustomTooltip />} />
             {showAllPoints && (
               <Scatter
                 name="Frontier Scatter"
-                data={data}
+                data={allPointsScatterData}
                 fill="#8884d8"
                 line={false}
                 shape="circle"
